@@ -81,6 +81,8 @@ typedef struct pam_ldap_config
     char *filter;
     /* attribute to search on; defaults to uid. Use CN with ADS? */
     char *userattr;
+    /* check the attribute to search on; helps if attribute in ldap isnt case sensitive */
+    int check_userattr;
     /* attribute to set PAM_USER based on */
     char *tmplattr;
     /* default template user */

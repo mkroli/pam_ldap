@@ -636,6 +636,7 @@ _alloc_config (pam_ldap_config_t ** presult)
   result->filter = NULL;
   result->ssd = NULL;
   result->userattr = NULL;
+  result->check_userattr = 0;
   result->groupattr = NULL;
   result->groupdn = NULL;
   result->getpolicy = 0;
@@ -1013,6 +1014,11 @@ _read_config (const char *configFile, pam_ldap_config_t ** presult)
       else if (!strcasecmp (k, "pam_login_attribute"))
 	{
 	  CHECKPOINTER (result->userattr = strdup (v));
+	}
+      else if (!strcasecmp (k, "pam_check_login_attribute"))
+	{
+	  result->check_userattr = (!strcasecmp (v, "on") || !strcasecmp (v, "yes")
+				    || !strcasecmp (v, "true"));
 	}
       else if (!strcasecmp (k, "pam_template_login_attribute"))
 	{
@@ -2808,6 +2814,21 @@ nxt:
   _get_string_values (session->ld, msg, "host", &session->info->hosts_allow);
   _get_string_values (session->ld, msg, "authorizedService",
 		      &session->info->services_allow);
+
+  /*
+   * check the username and the ldap entry. if pam_login_attribute
+   * is set to 'uid' for example, the user "test" could login
+   * as "TEST" because the attribute 'uid' isnt case sensitive.
+   */
+  _get_string_value (session->ld, msg, session->conf->userattr,
+		     &session->info->username);
+  if (session->conf->check_userattr && strcmp (escapedUser,
+      session->info->username))
+    {
+      ldap_msgfree (res);
+      _release_user_info (&session->info);
+      return PAM_USER_UNKNOWN;
+    }
 
   /* get UID */
 #ifdef UID_NOBODY

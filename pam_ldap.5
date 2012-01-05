@@ -301,6 +301,11 @@ Specifies the attribute to use when constructing the attribute value
 assertion for retrieving a directory entry for a user's login name.
 The default is "uid", for compatibility with RFC 2307.
 .TP
+.B pam_check_login_attribute <yes|no>
+Specifies whether to check the user with the entry in pam_login_attribute
+to avoid the possibility of authenticating with a username that isnt
+equal the ldap-entry which isnt case-sensitive for example 'uid'.
+.TP
 .B pam_filter <filter>
 Specifies a filter to use when retrieving user information. The user
 entry must match the attribute value assertion of
